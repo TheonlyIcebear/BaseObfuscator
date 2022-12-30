@@ -1,16 +1,24 @@
-import base64, names, math
+import base64, string, names, math
+from tqdm import tqdm
 
-recursion = 1 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 7 # only works from base 1 - 10
+recursion = 2 # get's exponentially laggier, the higher this number, but more "encrypted"
+base = 72 # Must be a whole number, 1 - 72
 input = "example.py" # file to obfuscate
 
-code = open(input)
+code = open(input, "r+").read()
+key = ["#", "$", "@", "&", "^", "!", "&", "*", "<", ">", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] + list(string.ascii_lowercase) + list(string.ascii_uppercase)
 
 def encode(x, base):
+    if not x:
+        return key[0]
+    
     log = math.floor(math.log(x, base))
+
     st = [0]*(log+1)
     st[-1] = 1
-    x -= base**log
+    if log:
+        x -= base**log
+
     while True:
         if x >= base:
             log = math.floor(math.log(x, base))
@@ -18,25 +26,29 @@ def encode(x, base):
             st[log] += 1 
         else:
             st[0] = x
-            return int(''.join([str(char )for char in st[::-1]]))
+            return ''.join([str(key[char] )for char in st[::-1]])
 
 
 def decode(x, base):
     result = 0
     for count, char in enumerate(str(x)[::-1]):
-        result += int(char)*(base**count)
+        result += int(key.index(str(char)))*(base**count)
 
     return result
 
-for n in range(recursion):
-    list = [names.get_first_name() for _ in range(4)]
+enc2 = ' '.join([ str(encode(ord(chr), base)) for chr in 'exec'])
+
+for n in tqdm(range(recursion)):
     enc = ' '.join([ str(encode(ord(chr), base)) for chr in code])
+    
     if n+1 == recursion:
-        indent = '  '*5000
+        indent = '  '*20000
+        message = 'pass;'
     else:
-        indent = '  '*20
-    src = f"""{list[0]}='{enc}'{indent};{list[1]}=exec;{list[1]}(''.join([chr(sum([int(ch)*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in({list[0]}.split(' '))]))"""
-    code = src
+        indent = ''
+        message = ''
+    src = f"""{message}{indent}k={str(key).replace(' ', '')};(eval(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))])))(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split(' '))]))"""
+    code = src.replace('-.', '-1')
 
 with open('output.py', 'wb') as file:
     file.write(src.encode())
