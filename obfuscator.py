@@ -59,7 +59,7 @@ for n in tqdm(range(recursion)):
         message = f"pass{'  '*0};"
     else:
         message = ''
-    src = f"""{message}k={str(key).replace(' ', '')};(eval(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))])))(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split(' '))]))"""
+    src = f"""{message}k={str(key).replace(' ', '')};(eval(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))]), "", "eval")))(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split(' '))]), "", "exec"))"""
     code = src.replace('-.', '-1')
 
 with open('output.py', 'wb') as file:
