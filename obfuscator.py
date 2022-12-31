@@ -1,15 +1,19 @@
 import random, base64, string, names, math
 from tqdm import tqdm
 
-recursion = 10 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 93 # Must be a whole number, 1 - 94
+recursion = 3 # get's exponentially laggier, the higher this number, but more "encrypted"
+base = 93 # Must be a whole number, 2 - 93
 indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
 input = "example.py" # file to obfuscate
 
 code = open(input, "r+").read()
-key = characters = list(map(chr, range(33, 127)))
-key.remove('\\')
-key.remove("'")
+key = characters = list(map(chr, range(94, 94+base)))
+
+blacklist = ["\\", "'"]
+
+for item in blacklist:
+    if item in key:
+        key.remove(item)
 
 random.shuffle(key)
 
