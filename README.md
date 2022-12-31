@@ -13,6 +13,8 @@ pass;k=['%','|','H','"','(','M','j','-','s','L','v','c','5','l','~','2','A','V',
 # Usage ⚙
 Just input the files name into the `input` variable
 
- - recursion: How many times to encrypt, keep this below 5 at most, because it will start taking a ridiculous amount of time to encrypt and run
- - base: what Base system to use during encryption, must be a whole number and below 10
+ - recursion: How many times to encrypt, keep this below 100 at most, because it will start taking a ridiculous amount of time to encrypt and run
+ - base: what Base system to use during encryption, must be a whole number, can go all the way up to infinity, unless you disable `bytes_allowed`. 
+   - ⚠ The higher the base the longer it'll take to run, generally keep it below 1024
  - input: filename to obfuscate
+ - bytes_allowed: Wether or not the program is allowed to use byte characters
