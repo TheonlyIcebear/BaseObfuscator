@@ -1,6 +1,10 @@
 # Simple-Obfuscator 🐱‍💻
 A simple python obfuscator 
 
+# Explanation
+
+The program starts by creating a list of characters, each character representing a different value, based on it's location in the list. <br> Then the program takes your source code and runs it through a base N convertor, then converts each number inside that str into it's respective character inside the previous list. Then the program puts the list, with all the characters inside the obfuscated source code, as well as the code to deobfuscate it, then the program runs it via exec.
+
 # Usage ⚙
 Just input the files name into the `input` variable
 
