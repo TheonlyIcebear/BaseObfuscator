@@ -2,7 +2,7 @@ import random, base64, string, names, math
 from tqdm import tqdm
 
 recursion = 3 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 93 # Must be a whole number, 2 - 93
+base = 1000 # Must be a whole number, 2 - inf
 indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
 input = "example.py" # file to obfuscate
 
