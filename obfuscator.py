@@ -1,24 +1,25 @@
 import random, base64, string, names, math
 from tqdm import tqdm
 
-recursion = 3 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 93 # Must be a whole number, 2 - inf
+recursion = 5 # get's exponentially laggier, the higher this number, but more "encrypted"
+base = 4096 # Must be a whole number, 2 - inf
 indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
 bytes_allowed = True # If disabled then base cannot be above 93
 input = "example.py" # file to obfuscate
 
 
-code = open(input, "r+").read()
+code = open(input, "rb").read().decode()
 if bytes_allowed:
     key = characters = list(map(chr, range(94, 94+base)))
 else:
     key = characters = list(map(chr, range(33, 34+base)))
 
-blacklist = ["\\", "'"]
+blacklist = ["'", "`"]
 
 for item in blacklist:
     if item in key:
         key.remove(item)
+        base -= 1
 
 random.shuffle(key)
 
@@ -53,13 +54,13 @@ def decode(x, base):
 enc2 = ' '.join([ str(encode(ord(chr), base)) for chr in 'exec'])
 
 for n in tqdm(range(recursion)):
-    enc = ' '.join([ str(encode(ord(chr), base)) for chr in code])
+    enc = '`'.join([ str(encode(ord(chr), base)) for chr in code])
     
     if n+1 == recursion:
-        message = f"pass{'  '*0};"
+        message = f"pass{'  '*indent};"
     else:
         message = ''
-    src = f"""{message}k={str(key).replace(' ', '')};(eval(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))]), "", "eval")))(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split(' '))]), "", "exec"))"""
+    src = f"""{message}k='{''.join(key)}';(eval(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))]), "", "eval")))(compile(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split('`'))]), "", "exec"))"""
     code = src.replace('-.', '-1')
 
 with open('output.py', 'wb') as file:
