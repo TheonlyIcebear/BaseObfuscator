@@ -1,10 +1,11 @@
 import random, base64, string, names, math
 from tqdm import tqdm
 
-recursion = 5 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 512 # Must be a whole number, 2 - inf
+recursion = 2 # get's exponentially laggier, the higher this number, but more "encrypted"
+base = 15000 # Must be a whole number, 2 - 55000
 indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
 bytes_allowed = True # If disabled then base cannot be above 93
+invisble_characters = True # Use invisible characters
 input = "example.py" # file to obfuscate
 
 
@@ -25,7 +26,7 @@ random.shuffle(key)
 highest = 0
 
 def encode(x, base):
-    global highest
+    global highest, key
     if not x:
         return key[0]
     
@@ -41,8 +42,10 @@ def encode(x, base):
             log = math.floor(math.log(x, base))
             x -= base**log
             st[log] += 1 
+            if st[log] > highest: highest = st[log]
         else:
             st[0] = x
+            if st[0] > highest: highest = x
             return ''.join([str(key[char] )for char in st[::-1]])
 
 def decode(x, base):
@@ -52,20 +55,24 @@ def decode(x, base):
 
     return result
 
-enc2 = ' '.join([ str(encode(ord(chr), base)) for chr in 'exec'])
-enc3 = ' '.join([ str(encode(ord(chr), base)) for chr in 'compile'])
-
 for n in tqdm(range(recursion)):
-    enc = '`'.join([ str(encode(ord(chr), base)) for chr in code])
     
     if n+1 == recursion:
         message = f"pass{'  '*indent};"
+        if invisble_characters:
+            base = 2
+            key = ['​', '‍']
     else:
         message = ''
-    src = f"""{message}k='{''.join(key)}';(eval(eval(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc2}'.split(' '))]), "", "eval")))(eval(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({base}**c) for c, ch in enumerate(str(x)[::-1])]))for x in('{enc}'.split('`'))]), "", "exec"))"""
+        random.shuffle(key)
+
+    enc = '‌'.join([ (str(encode(ord(chr), base))) for chr in code])
+    enc2 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'exec'])
+    enc3 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'compile'])
+    src = f"""{message}k='{''.join(key)}';(eval(eval(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc2}'.split(' '))]), "", dir(__builtins__)[0x69-1])))(eval(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc}'.split('‌'))]), "", dir(__builtins__)[0x6a-1]))"""
     code = src.replace('-.', '-1')
 
-with open('output.py', 'wb') as file:
+with open(f'{input} (output).py', 'wb') as file:
     file.write(src.encode())
 
 print(src)
