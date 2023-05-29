@@ -1,7 +1,7 @@
 import random, base64, string, names, zlib, math
 from tqdm import tqdm
 
-recursion = 1 # get's exponentially laggier, the higher this number, but more "encrypted"
+recursion = 5 # get's exponentially laggier, the higher this number, but more "encrypted"
 base = 15000 # Must be a whole number, 2 - 55000
 indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
 bytes_allowed = True # If disabled then base cannot be above 93
@@ -70,7 +70,7 @@ for n in tqdm(range(recursion)):
     enc = '‌'.join([ (str(encode(ord(chr), base))) for chr in code])
     enc2 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'exec'])
     enc3 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'compile'])
-    src = f"""{message}k='{''.join(key)}';(eval(eval(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc2}'.split(' '))]), "", dir(__builtins__)[0x69-1])))(eval(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([k.index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc}'.split('‌'))]), "", dir(__builtins__)[0x6a-1]))"""
+    src = f"""{message}lf1=lambda m: ''.join([ch[m**--++++0x0-1] for ch in '{''.join(key)}']);(eval(eval(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc2}'.split(' '))]), "", dir(__builtins__)[0x69-1])))(eval(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc}'.split('‌'))]), "", dir(__builtins__)[0x6a-1]))"""
     if compress:
         src = f'''eval(dir(__builtins__)[0x6a-1])(__import__('zlib').decompress(__import__('base64').b64decode(b'{base64.b64encode(zlib.compress(src.encode())).decode()}')).decode())'''
     print(len(enc), len(code), len(enc), len(src))
