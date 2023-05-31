@@ -1,82 +1,86 @@
-import random, base64, string, names, zlib, math
+import random
+import base64
+import zlib
+import math
 from tqdm import tqdm
 
-recursion = 5 # get's exponentially laggier, the higher this number, but more "encrypted"
-base = 15000 # Must be a whole number, 2 - 55000
-indent = 0 # How many indents should be used to space out the actual code and the pass. Used to hide the code from a IDE
-bytes_allowed = True # If disabled then base cannot be above 93
-invisble_characters = True # Use invisible characters
-compress = False # compress code
-input = "example.py" # file to obfuscate
+class Obfuscator:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.recursion = 1
+        self.base = 2
+        self.indent = 0
+        self.bytes_allowed = False
+        self.invisible_characters = False
+        self.compress = False
+        self.code = self.read_file()
+        self.key = self.generate_key()
+        self.highest = 0
 
+    def read_file(self):
+        with open(self.file_path, "rb") as f:
+            return f.read().decode()
 
-code = open(input, "rb").read().decode()
-if bytes_allowed:
-    key = characters = list(map(chr, range(94, 94+base)))
-else:
-    key = characters = list(map(chr, range(33, 34+base)))
-
-blacklist = ["'", "`", "\\"]
-
-for item in blacklist:
-    if item in key:
-        key.remove(item)
-        base -= 1
-
-random.shuffle(key)
-highest = 0
-
-def encode(x, base):
-    global highest, key
-    if not x:
-        return key[0]
-    
-    log = math.floor(math.log(x, base))
-
-    st = [0]*(log+1)
-    st[-1] = 1
-    if log:
-        x -= base**log
-
-    while True:
-        if x >= base:
-            log = math.floor(math.log(x, base))
-            x -= base**log
-            st[log] += 1 
-            if st[log] > highest: highest = st[log]
+    def generate_key(self):
+        if self.bytes_allowed:
+            key = list(map(chr, range(94, 94+self.base)))
         else:
-            st[0] = x
-            if st[0] > highest: highest = x
-            return ''.join([str(key[char] )for char in st[::-1]])
+            key = list(map(chr, range(33, 34+self.base)))
 
-def decode(x, base):
-    result = 0
-    for count, char in enumerate(str(x)[::-1]):
-        result += int(key.index(str(char)))*(base**count)
+        for item in ["'", "`", "\\"]:
+            if item in key:
+                key.remove(item)
+                self.base -= 1
 
-    return result
-
-for n in tqdm(range(recursion)):
-    
-    if n+1 == recursion:
-        message = f"pass{'  '*indent};"
-        if invisble_characters:
-            base = 2
-            key = ['​', '‍', '‎']
-    else:
-        message = ''
         random.shuffle(key)
+        return key
 
-    enc = '‌'.join([ (str(encode(ord(chr), base))) for chr in code])
-    enc2 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'exec'])
-    enc3 = ' '.join([ (str(encode(ord(chr), base))) for chr in 'compile'])
-    src = f"""{message}lf1=lambda m: ''.join([ch[m**--++++0x0-1] for ch in '{''.join(key)}']);(eval(eval(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc2}'.split(' '))]), "", dir(__builtins__)[0x69-1])))(eval(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{base}**2).index(str(ch))*({hex(base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc}'.split('‌'))]), "", dir(__builtins__)[0x6a-1]))"""
-    if compress:
-        src = f'''eval(dir(__builtins__)[0x6a-1])(__import__('zlib').decompress(__import__('base64').b64decode(b'{base64.b64encode(zlib.compress(src.encode())).decode()}')).decode())'''
-    print(len(enc), len(code), len(enc), len(src))
-    # print(enc)
+    def encode(self, x):
+        if not x:
+            return self.key[0]
+        
+        log = math.floor(math.log(x, self.base))
 
-with open(f'{input} (output).py', 'wb') as file:
-    file.write(src.encode())
+        st = [0]*(log+1)
+        st[-1] = 1
+        if log:
+            x -= self.base**log
 
-# print(src)
+        while True:
+            if x >= self.base:
+                log = math.floor(math.log(x, self.base))
+                x -= self.base**log
+                st[log] += 1 
+                if st[log] > self.highest: 
+                    self.highest = st[log]
+            else:
+                st[0] = x
+                if st[0] > self.highest: 
+                    self.highest = x
+                return ''.join([str(self.key[char]) for char in st[::-1]])
+
+    def obfuscate(self):
+        for n in tqdm(range(self.recursion)):
+            if n+1 == self.recursion:
+                message = f"pass{'  '*self.indent};"
+                if self.invisible_characters:
+                    self.base = 2
+                    self.key = ['​', '‍', '‎']
+            else:
+                message = ''
+                random.shuffle(self.key)
+
+            enc = '‌'.join([ (str(self.encode(ord(chr)))) for chr in self.code])
+            enc2 = ' '.join([ (str(self.encode(ord(chr)))) for chr in 'exec'])
+            enc3 = ' '.join([ (str(self.encode(ord(chr)))) for chr in 'compile'])
+            src = f"""{message}lf1=lambda m: ''.join([ch[m**--++++0x0-1] for ch in '{''.join(self.key)}']);(eval(eval(''.join([chr(sum([lf1(++{self.base}**2).index(str(ch))*({hex(self.base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{self.base}**2).index(str(ch))*({hex(self.base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc2}'.split(' '))]), "", dir(__builtins__)[0x69-1])))(eval(''.join([chr(sum([lf1(++{self.base}**2).index(str(ch))*({hex(self.base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc3}'.split(' '))]))(''.join([chr(sum([lf1(++{self.base}**2).index(str(ch))*({hex(self.base)}**c) for c, ch in enumerate(str(x)[::-0x1])]))for x in('{enc}'.split('‌'))]), "", dir(__builtins__)[0x6a-1]))"""
+            if self.compress:
+                src = f'''eval(dir(__builtins__)[0x6a-1])(__import__('zlib').decompress(__import__('base64').b64decode(b'{base64.b64encode(zlib.compress(src.encode())).decode()}')).decode())'''
+            print(len(enc), len(self.code), len(enc), len(src))
+
+        with open(f'{self.file_path} (output).py', 'wb') as file:
+            file.write(src.encode())
+
+if __name__ == "__main__":
+    obfuscator = Obfuscator("C:\\Users\\Username\\Desktop\\file.py")
+    obfuscator.obfuscate()
